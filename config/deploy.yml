@@ -1,0 +1,47 @@
+service: floating-app
+image: timetravelerfromnow/floating-app
+servers:
+  web:
+    hosts:
+      - 137.184.1.211
+    labels:
+        traefik.http.routers.floating-app_secure.entrypoints: websecure
+        traefik.http.routers.floating-app_secure.rule: Host(`kleinercader.org`)
+        traefik.http.routers.floating-app_secure.tls: true
+proxy:
+  ssl: true
+  host: app.example.com
+
+registry:
+  username: timetravelerfromnow
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+# Configure builder setup.
+builder:
+  arch: amd64
+env:
+  secret:
+    - RAILS_MASTER_KEY
+
+accessories:
+  traefik:
+    service: traefik
+    image: traefik:v2.10
+    port: 80
+    cmd: "--providers.docker"
+    options:
+      volume:
+        - "/var/run/docker.sock:/var/run/docker.sock"
+    roles:
+      - web
+#
+# traefik:
+#   options:
+#     publish:
+#       - "443:443"
+#     args:
+#       entryPoints.websecure.address: ":443"
+
+volumes:
+  - "storage:/rails/storage"
